@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Палет Планер — компактно подреждане на детайли по палети</title>
+<meta name="description" content="Качи DXF файл с детайли, задай изисквания за палета и получи максимално компактно подреждане по слоеве.">
+<link rel="icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --graphite:#1c2128; --graphite2:#252b34; --steel:#5b84b1; --steel-dim:#3a4a5e;
+    --text:#e8e6e1; --text-dim:#9aa3ad; --ok:#7fae6f;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--graphite); color:var(--text); font-family:'IBM Plex Sans', sans-serif; line-height:1.6;}
+  ::selection{background:var(--steel); color:white;}
+  a{color:var(--steel); text-decoration:none;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px;}
+
+  nav{display:flex; align-items:center; justify-content:space-between; padding:22px 0; border-bottom:1px solid #333a44; gap:16px; flex-wrap:wrap;}
+  .logo{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:18px;}
+  .nav-right{display:flex; align-items:center; gap:14px;}
+  #langSwitch{display:flex; gap:6px;}
+  .lang-btn{
+    background:none; border:1px solid var(--steel-dim); color:var(--text-dim);
+    padding:5px 11px; border-radius:3px; font-size:11px; cursor:pointer;
+    font-family:'IBM Plex Mono',monospace; letter-spacing:.04em;
+  }
+  .lang-btn.active{background:var(--steel); color:#0e1216; border-color:var(--steel); font-weight:700;}
+  .nav-cta{background:var(--steel); color:#0e1216; font-weight:700; font-size:14px; padding:10px 20px; border-radius:4px; font-family:'IBM Plex Mono',monospace;}
+
+  .hero{padding:90px 0 70px; text-align:center;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--steel); margin-bottom:18px;}
+  h1{font-family:'IBM Plex Mono',monospace; font-size:44px; font-weight:700; line-height:1.2; margin-bottom:20px; max-width:780px; margin-left:auto; margin-right:auto;}
+  .hero p{font-size:18px; color:var(--text-dim); max-width:620px; margin:0 auto 36px;}
+  .cta-row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap;}
+  .btn-primary{background:var(--steel); color:#0e1216; font-weight:700; font-size:15px; padding:15px 32px; border-radius:5px; font-family:'IBM Plex Mono',monospace; display:inline-block;}
+  .btn-secondary{border:1px solid var(--steel-dim); color:var(--text); font-weight:600; font-size:15px; padding:15px 32px; border-radius:5px; font-family:'IBM Plex Mono',monospace; display:inline-block;}
+
+  .stats{display:flex; justify-content:center; gap:60px; flex-wrap:wrap; padding:36px 0; border-top:1px solid #333a44; border-bottom:1px solid #333a44;}
+  .stat{text-align:center;}
+  .stat .num{font-family:'IBM Plex Mono',monospace; font-size:30px; font-weight:700; color:var(--ok);}
+  .stat .lbl{font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; margin-top:4px;}
+
+  .features{padding:80px 0;}
+  .features h2{font-family:'IBM Plex Mono',monospace; font-size:28px; text-align:center; margin-bottom:50px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:28px;}
+  .card{background:var(--graphite2); border:1px solid #333a44; border-radius:8px; padding:26px;}
+  .card .icon{font-size:26px; margin-bottom:14px;}
+  .card h3{font-size:17px; margin-bottom:10px; font-weight:600;}
+  .card p{font-size:14px; color:var(--text-dim);}
+
+  .how{padding:80px 0; background:var(--graphite2); border-top:1px solid #333a44; border-bottom:1px solid #333a44;}
+  .how h2{font-family:'IBM Plex Mono',monospace; font-size:28px; text-align:center; margin-bottom:50px;}
+  .steps{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:30px;}
+  .step .n{font-family:'IBM Plex Mono',monospace; font-size:34px; font-weight:700; color:var(--steel); margin-bottom:10px;}
+  .step h3{font-size:16px; margin-bottom:8px;}
+  .step p{font-size:14px; color:var(--text-dim);}
+
+  .cta-bottom{padding:90px 0; text-align:center;}
+  .cta-bottom h2{font-family:'IBM Plex Mono',monospace; font-size:30px; margin-bottom:16px;}
+  .cta-bottom p{color:var(--text-dim); margin-bottom:32px; max-width:520px; margin-left:auto; margin-right:auto;}
+
+  footer{border-top:1px solid #333a44; padding:32px 0; text-align:center; color:var(--text-dim); font-size:13px;}
+  footer a{color:var(--text-dim);}
+  code{background:#141820; padding:2px 6px; border-radius:3px; font-size:.9em;}
+
+  @media (max-width:640px){ h1{font-size:32px;} .hero{padding:60px 0 50px;} .stats{gap:30px;} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="logo">Палет Планер</div>
+    <div class="nav-right">
+      <div id="langSwitch">
+        <button class="lang-btn" data-lang="bg">BG</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="fi">FI</button>
+      </div>
+      <a class="nav-cta" href="/app/" id="t_navCta">Отвори приложението →</a>
+    </div>
+  </nav>
+</div>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow" id="t_eyebrow">За металообработващи цехове</div>
+    <h1 id="t_h1">Спести материал с компактно подреждане на детайли по палети</h1>
+    <p id="t_heroP">Качи DXF файл, задай размера на палета — и получи максимално плътно подреждане по слоеве, изчислено с реалната форма на всеки детайл, не само с правоъгълни габарити.</p>
+    <div class="cta-row">
+      <a class="btn-primary" href="/app/" id="t_ctaPrimary">Опитай безплатно</a>
+      <a class="btn-secondary" href="#how" id="t_ctaSecondary">Как работи</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="num">95%+</div><div class="lbl" id="t_stat1">Запълване на слой</div></div>
+    <div class="stat"><div class="num">3</div><div class="lbl" id="t_stat2">Езика (BG/EN/FI)</div></div>
+    <div class="stat"><div class="num">0€</div><div class="lbl" id="t_stat3">За да пробваш</div></div>
+  </div>
+</div>
+
+<div class="features">
+  <div class="wrap">
+    <h2 id="t_featuresTitle">Какво прави</h2>
+    <div class="grid" id="featureGrid"></div>
+  </div>
+</div>
+
+<div class="how" id="how">
+  <div class="wrap">
+    <h2 id="t_howTitle">Как работи</h2>
+    <div class="steps" id="stepsGrid"></div>
+  </div>
+</div>
+
+<div class="cta-bottom">
+  <div class="wrap">
+    <h2 id="t_ctaBottomH2">Готов да пробваш?</h2>
+    <p id="t_ctaBottomP">Безплатно, работи директно в браузъра — без инсталация, без регистрация.</p>
+    <a class="btn-primary" href="/app/" id="t_ctaBottomBtn">Отвори приложението →</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap" id="t_footer">
+    Палет Планер · <a href="mailto:ivopengezov@gmail.com">ivopengezov@gmail.com</a>
+  </div>
+</footer>
+
+<script>
+const translations = {
+  bg: {
+    navCta: 'Отвори приложението →',
+    eyebrow: 'За металообработващи цехове',
+    h1: 'Спести материал с компактно подреждане на детайли по палети',
+    heroP: 'Качи DXF файл, задай размера на палета — и получи максимално плътно подреждане по слоеве, изчислено с реалната форма на всеки детайл, не само с правоъгълни габарити.',
+    ctaPrimary: 'Опитай безплатно',
+    ctaSecondary: 'Как работи',
+    stat1: 'Запълване на слой', stat2: 'Езика (BG/EN/FI)', stat3: 'За да пробваш',
+    featuresTitle: 'Какво прави',
+    features: [
+      ['▦','Реални форми, не правоъгълници','Алгоритъмът чете точния контур на всеки детайл от DXF файла — включително заоблени ъгли и изрязани страни — и ги вписва плътно едни до други.'],
+      ['⬢','Подреждане по слоеве','Детайлите се пакетират максимално плътно в един слой, после слоевете се трупат един върху друг до лимита за тегло и височина на палета.'],
+      ['%','Измеримо запълване','Виждаш точния процент оползотворено пространство на всеки слой и общо на палета — конкретен аргумент за спестен материал.'],
+      ['🖨','Печат за цеха','Готов PDF изглед на всеки слой със списък на детайлите — директно за оператора на пода на цеха.'],
+      ['⚖','Автоматично тегло','Задай плътност на материала — теглото на всеки детайл и целия палет се изчислява автоматично от площ и дебелина.'],
+      ['🌍','На три езика','Български, английски и фински — превключваш с един клик, без да презарежда страницата.'],
+    ],
+    howTitle: 'Как работи',
+    steps: [
+      ['01','Качи DXF файл','Слоевете в DXF файла се именуват по образец ИМЕ_T{дебелина}_Q{количество} — контур на детайла, без вътрешни елементи.'],
+      ['02','Задай изисквания','Размер на палета, максимално тегло, максимална височина и плътност на материала.'],
+      ['03','Изчисли подреждане','Алгоритъмът нарежда детайлите максимално плътно по слоеве и ги трупа до лимита, преди да мине на следващ палет.'],
+      ['04','Разпечатай или сподели','Виж резултата по слоеве с % запълване, свали PDF за цеха.'],
+    ],
+    ctaBottomH2: 'Готов да пробваш?',
+    ctaBottomP: 'Безплатно, работи директно в браузъра — без инсталация, без регистрация.',
+    ctaBottomBtn: 'Отвори приложението →',
+    footer: 'Палет Планер',
+  },
+  en: {
+    navCta: 'Open the app →',
+    eyebrow: 'For metal fabrication shops',
+    h1: 'Save material with compact part layout on pallets',
+    heroP: 'Upload a DXF file, set the pallet size — and get the most compact layer-by-layer arrangement, calculated using the real shape of each part, not just rectangular bounding boxes.',
+    ctaPrimary: 'Try it free',
+    ctaSecondary: 'How it works',
+    stat1: 'Layer fill rate', stat2: 'Languages (BG/EN/FI)', stat3: 'To try it',
+    featuresTitle: 'What it does',
+    features: [
+      ['▦','Real shapes, not rectangles','The algorithm reads the exact outline of each part from the DXF file — including rounded corners and cut edges — and packs them tightly together.'],
+      ['⬢','Layer-based packing','Parts are packed as densely as possible into one layer, then layers are stacked on top of each other up to the pallet\'s weight and height limit.'],
+      ['%','Measurable fill rate','See the exact percentage of used space on each layer and the whole pallet — a concrete argument for material savings.'],
+      ['🖨','Shop-floor printing','A ready PDF view of each layer with a parts list — straight to the machine operator.'],
+      ['⚖','Automatic weight','Set the material density — the weight of each part and the whole pallet is calculated automatically from area and thickness.'],
+      ['🌍','Three languages','Bulgarian, English and Finnish — switch with one click, no page reload.'],
+    ],
+    howTitle: 'How it works',
+    steps: [
+      ['01','Upload a DXF file','Layers in the DXF file must be named as NAME_T{thickness}_Q{quantity} — part outline, no internal elements.'],
+      ['02','Set requirements','Pallet size, max weight, max height and material density.'],
+      ['03','Compute layout','The algorithm packs parts as densely as possible per layer, stacking them up to the limit before moving to the next pallet.'],
+      ['04','Print or share','View the result by layer with % fill rate, download a PDF for the shop floor.'],
+    ],
+    ctaBottomH2: 'Ready to try it?',
+    ctaBottomP: 'Free, runs directly in the browser — no install, no signup.',
+    ctaBottomBtn: 'Open the app →',
+    footer: 'Palet Planer',
+  },
+  fi: {
+    navCta: 'Avaa sovellus →',
+    eyebrow: 'Metallinjalostuspajoille',
+    h1: 'Säästä materiaalia tiiviillä osien asettelulla lavoilla',
+    heroP: 'Lataa DXF-tiedosto, aseta lavan koko — ja saat mahdollisimman tiiviin, kerroksittaisen asettelun, laskettuna kunkin osan todellisella muodolla, ei vain suorakulmaisilla mitoilla.',
+    ctaPrimary: 'Kokeile ilmaiseksi',
+    ctaSecondary: 'Miten se toimii',
+    stat1: 'Kerroksen täyttöaste', stat2: 'Kieltä (BG/EN/FI)', stat3: 'Kokeiluun',
+    featuresTitle: 'Mitä se tekee',
+    features: [
+      ['▦','Todelliset muodot, ei suorakulmiot','Algoritmi lukee jokaisen osan tarkan ääriviivan DXF-tiedostosta — pyöristetyt kulmat ja leikatut reunat mukaan lukien — ja asettelee ne tiiviisti vierekkäin.'],
+      ['⬢','Kerroksittainen pakkaus','Osat pakataan mahdollisimman tiiviisti yhteen kerrokseen, ja kerrokset pinotaan päällekkäin lavan paino- ja korkeusrajaan asti.'],
+      ['%','Mitattava täyttöaste','Näet tarkan käytetyn tilan prosenttiosuuden jokaisella kerroksella ja koko lavalla — konkreettinen argumentti materiaalisäästöille.'],
+      ['🖨','Tulostus tuotantoon','Valmis PDF-näkymä jokaisesta kerroksesta osaluetteloineen — suoraan koneenkäyttäjälle.'],
+      ['⚖','Automaattinen paino','Aseta materiaalin tiheys — jokaisen osan ja koko lavan paino lasketaan automaattisesti pinta-alasta ja paksuudesta.'],
+      ['🌍','Kolme kieltä','Suomi, englanti ja bulgaria — vaihda yhdellä klikkauksella, ilman sivun uudelleenlatausta.'],
+    ],
+    howTitle: 'Miten se toimii',
+    steps: [
+      ['01','Lataa DXF-tiedosto','DXF-tiedoston tasojen nimet on oltava muodossa NIMI_T{paksuus}_Q{määrä} — osan ääriviiva, ilman sisäisiä elementtejä.'],
+      ['02','Aseta vaatimukset','Lavan koko, maksimipaino, maksimikorkeus ja materiaalin tiheys.'],
+      ['03','Laske asettelu','Algoritmi asettelee osat mahdollisimman tiiviisti kerroksittain, pinoten rajaan asti ennen seuraavaa lavaa.'],
+      ['04','Tulosta tai jaa','Katso tulos kerroksittain täyttöasteineen, lataa PDF tuotantoon.'],
+    ],
+    ctaBottomH2: 'Valmis kokeilemaan?',
+    ctaBottomP: 'Ilmainen, toimii suoraan selaimessa — ei asennusta, ei rekisteröitymistä.',
+    ctaBottomBtn: 'Avaa sovellus →',
+    footer: 'Palet Planer',
+  },
+};
+
+let currentLang = localStorage.getItem('paletPlanerLang') || 'bg';
+
+function renderGrid(id, items, isSteps) {
+  const el = document.getElementById(id);
+  el.innerHTML = items.map(item => {
+    if (isSteps) {
+      const [n, title, p] = item;
+      return `<div class="step"><div class="n">${n}</div><h3>${title}</h3><p>${p}</p></div>`;
+    } else {
+      const [icon, title, p] = item;
+      return `<div class="card"><div class="icon">${icon}</div><h3>${title}</h3><p>${p}</p></div>`;
+    }
+  }).join('');
+}
+
+function applyLang(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('paletPlanerLang', lang); } catch(e){}
+  const t = translations[lang];
+  document.getElementById('t_navCta').textContent = t.navCta;
+  document.getElementById('t_eyebrow').textContent = t.eyebrow;
+  document.getElementById('t_h1').textContent = t.h1;
+  document.getElementById('t_heroP').textContent = t.heroP;
+  document.getElementById('t_ctaPrimary').textContent = t.ctaPrimary;
+  document.getElementById('t_ctaSecondary').textContent = t.ctaSecondary;
+  document.getElementById('t_stat1').textContent = t.stat1;
+  document.getElementById('t_stat2').textContent = t.stat2;
+  document.getElementById('t_stat3').textContent = t.stat3;
+  document.getElementById('t_featuresTitle').textContent = t.featuresTitle;
+  document.getElementById('t_howTitle').textContent = t.howTitle;
+  document.getElementById('t_ctaBottomH2').textContent = t.ctaBottomH2;
+  document.getElementById('t_ctaBottomP').textContent = t.ctaBottomP;
+  document.getElementById('t_ctaBottomBtn').textContent = t.ctaBottomBtn;
+  renderGrid('featureGrid', t.features, false);
+  renderGrid('stepsGrid', t.steps, true);
+  document.getElementById('t_footer').innerHTML = `${t.footer} · <a href="mailto:ivopengezov@gmail.com">ivopengezov@gmail.com</a>`;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+});
+
+applyLang(currentLang);
+</script>
+
+</body>
+</html>
